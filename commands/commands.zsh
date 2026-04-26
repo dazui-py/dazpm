@@ -10,19 +10,21 @@ dazpm_cmd_commands() {
   local found=0
   local f
 
+  dazpm_ui_header "Commands in $name"
+
   for f in "$pkg_dir"/bin/*(N); do
     [[ -f "$f" ]] || continue
     found=1
-    print -r -- "${f:t}"
+    dazpm_ui_item "${f:t}"
   done
 
   for f in "$pkg_dir"/functions/*(N); do
     [[ -f "$f" ]] || continue
     found=1
-    print -r -- "${f:t}"
+    dazpm_ui_item "${f:t}"
   done
 
   if [[ "$found" -eq 0 ]]; then
-    print -r -- "no commands found"
+    dazpm_warn "no commands found"
   fi
 }

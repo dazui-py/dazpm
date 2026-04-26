@@ -7,5 +7,5 @@ dazpm_cmd_path() {
 
   [[ -e "$pkg_dir" ]] || dazpm_die "package not installed: $name"
 
-  print -r -- "${pkg_dir:A}"
+  dazpm_ui_raw_or_color "${pkg_dir:A}"
 }

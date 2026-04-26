@@ -173,3 +173,47 @@ dazpm_ui_after_command() {
   dazpm_ui_should_pad || return 0
   print
 }
+
+dazpm_ui_title() {
+  local title="$1"
+  local subtitle="${2:-}"
+
+  if [[ -n "$subtitle" ]]; then
+    dazpm_ui_print "${DAZPM_BOLD}${DAZPM_ACCENT}${title}${DAZPM_RESET} ${DAZPM_DIM}${subtitle}${DAZPM_RESET}"
+  else
+    dazpm_ui_print "${DAZPM_BOLD}${DAZPM_ACCENT}${title}${DAZPM_RESET}"
+  fi
+}
+
+dazpm_ui_subtitle() {
+  dazpm_ui_print "${DAZPM_DIM}$*${DAZPM_RESET}"
+}
+
+dazpm_ui_command() {
+  local cmd="$1"
+  local desc="${2:-}"
+
+  if [[ -n "$desc" ]]; then
+    dazpm_ui_print "  ${DAZPM_GREEN}${cmd}${DAZPM_RESET} ${DAZPM_DIM}${desc}${DAZPM_RESET}"
+  else
+    dazpm_ui_print "  ${DAZPM_GREEN}${cmd}${DAZPM_RESET}"
+  fi
+}
+
+dazpm_ui_example() {
+  dazpm_ui_print "  ${DAZPM_MAGENTA}$*${DAZPM_RESET}"
+}
+
+dazpm_ui_label() {
+  dazpm_ui_print "${DAZPM_BOLD}${DAZPM_ACCENT}$*${DAZPM_RESET}"
+}
+
+dazpm_ui_raw_or_color() {
+  local value="$1"
+
+  if [[ -t 1 ]]; then
+    dazpm_ui_print "${DAZPM_ACCENT}${value}${DAZPM_RESET}"
+  else
+    print -r -- "$value"
+  fi
+}

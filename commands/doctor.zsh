@@ -1,25 +1,21 @@
 dazpm_cmd_doctor() {
-  dazpm_log "checking environment"
+  dazpm_ui_header "Doctor"
 
-  [[ -n "$ZSH_VERSION" ]] || dazpm_warn "not running inside zsh"
+  [[ -n "$ZSH_VERSION" ]] \
+    && dazpm_log "zsh: ok" \
+    || dazpm_warn "not running inside zsh"
 
-  if command -v git >/dev/null 2>&1; then
-    dazpm_log "git: ok"
-  else
-    dazpm_warn "git not found"
-  fi
+  command -v git >/dev/null 2>&1 \
+    && dazpm_log "git: ok" \
+    || dazpm_warn "git not found"
 
-  if [[ -d "$DAZPM_HOME" ]]; then
-    dazpm_log "home: $DAZPM_HOME"
-  else
-    dazpm_warn "dazpm home does not exist yet: $DAZPM_HOME"
-  fi
+  [[ -d "$DAZPM_HOME" ]] \
+    && dazpm_log "home: $DAZPM_HOME" \
+    || dazpm_warn "dazpm home does not exist yet: $DAZPM_HOME"
 
-  if [[ -f "$DAZPM_LOADER" ]]; then
-    dazpm_log "loader: ok"
-  else
-    dazpm_warn "loader missing, run: dazpm init"
-  fi
+  [[ -f "$DAZPM_LOADER" ]] \
+    && dazpm_log "loader: ok" \
+    || dazpm_warn "loader missing, run: dazpm init"
 
   dazpm_log "done"
 }
