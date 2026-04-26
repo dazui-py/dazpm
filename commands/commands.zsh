@@ -1,3 +1,5 @@
+source "$DAZPM_ROOT/lib/package.zsh"
+
 dazpm_cmd_commands() {
   local name="${1:-}"
 
@@ -8,20 +10,26 @@ dazpm_cmd_commands() {
   [[ -e "$pkg_dir" ]] || dazpm_die "package not installed: $name"
 
   local found=0
-  local f
+  local file_item
+  local -a bin_files function_files
 
   dazpm_ui_header "Commands in $name"
 
-  for f in "$pkg_dir"/bin/*(N); do
-    [[ -f "$f" ]] || continue
+  bin_files=("${(@f)$(dazpm_pkg_files_by_kind "$pkg_dir" "bins")}")
+  function_files=("${(@f)$(dazpm_pkg_files_by_kind "$pkg_dir" "functions")}")
+
+  for file_item in "${bin_files[@]}"; do
+    [[ -n "$file_item" ]] || continue
+    [[ -f "$file_item" ]] || continue
     found=1
-    dazpm_ui_item "${f:t}"
+    dazpm_ui_item "${file_item:t}"
   done
 
-  for f in "$pkg_dir"/functions/*(N); do
-    [[ -f "$f" ]] || continue
+  for file_item in "${function_files[@]}"; do
+    [[ -n "$file_item" ]] || continue
+    [[ -f "$file_item" ]] || continue
     found=1
-    dazpm_ui_item "${f:t}"
+    dazpm_ui_item "${file_item:t}"
   done
 
   if [[ "$found" -eq 0 ]]; then

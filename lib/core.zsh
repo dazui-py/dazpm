@@ -19,7 +19,11 @@ dazpm_usage() {
   dazpm_ui_command "dazpm remove <name>" "remove an installed package"
   dazpm_ui_command "dazpm uninstall <name>" "alias for remove"
   dazpm_ui_command "dazpm update [name]" "update one package or all packages"
+  dazpm_ui_command "dazpm update --git" "update only git packages"
+  dazpm_ui_command "dazpm update --links" "refresh only linked local packages"
   dazpm_ui_command "dazpm link <path> [name]" "link a local package"
+  dazpm_ui_command "dazpm new <name>" "create a new package skeleton"
+  dazpm_ui_command "dazpm validate [path]" "validate a package directory"
   dazpm_ui_blank
 
   dazpm_ui_section "Inspect"
@@ -38,10 +42,15 @@ dazpm_usage() {
   dazpm_ui_blank
 
   dazpm_ui_section "Package layout"
+  dazpm_ui_example "daz.toml"
   dazpm_ui_example "bin/"
   dazpm_ui_example "functions/"
   dazpm_ui_example "plugins/"
   dazpm_ui_example "completions/zsh/"
+
+  dazpm_ui_blank
+  dazpm_ui_section "Manifest"
+  dazpm_ui_command "daz.toml" "optional package metadata and install manifest"
 }
 
 dazpm_main() {
