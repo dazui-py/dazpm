@@ -1,4 +1,5 @@
 source "$DAZPM_ROOT/lib/package.zsh"
+source "$DAZPM_ROOT/lib/args.zsh"
 
 dazpm_files_show_kind() {
   local pkg_dir="$1"
@@ -36,13 +37,26 @@ dazpm_files_show_kind() {
 }
 
 dazpm_cmd_files() {
-  local name="${1:-}"
+  dazpm_args_parse "path|p" "" "$@"
 
-  [[ -n "$name" ]] || dazpm_die "usage: dazpm files <name>"
+  local input
+  input="$(dazpm_args_first)"
 
-  local pkg_dir="$DAZPM_PACKAGES_DIR/$name"
+  [[ -n "$input" ]] || dazpm_die "usage: dazpm files <name> | dazpm files --path <dir>"
 
-  [[ -e "$pkg_dir" ]] || dazpm_die "package not installed: $name"
+  local name pkg_dir
+
+  if dazpm_args_has path; then
+    pkg_dir="${input:A}"
+    [[ -d "$pkg_dir" ]] || dazpm_die "directory not found: $pkg_dir"
+    name="${pkg_dir:t}"
+    dazpm_warn "inspecting local package, not installed"
+  else
+    name="$input"
+    pkg_dir="$DAZPM_PACKAGES_DIR/$name"
+    [[ -e "$pkg_dir" ]] || dazpm_die "package not installed: $name"
+    pkg_dir="${pkg_dir:A}"
+  fi
 
   dazpm_ui_header "Files in $name"
   dazpm_ui_blank

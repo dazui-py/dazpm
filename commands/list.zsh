@@ -1,4 +1,5 @@
 source "$DAZPM_ROOT/lib/record.zsh"
+source "$DAZPM_ROOT/lib/args.zsh"
 
 dazpm_list_verbose_table() {
   local found=0
@@ -57,15 +58,20 @@ dazpm_list_verbose_cards() {
 }
 
 dazpm_cmd_list() {
-  local verbose=0
-
-  if [[ "${1:-}" == "-v" || "${1:-}" == "--verbose" ]]; then
-    verbose=1
-  fi
+  dazpm_args_parse "verbose|v,plain" "" "$@"
 
   mkdir -p "$DAZPM_PACKAGES_DIR"
 
-  if [[ "$verbose" -eq 0 ]]; then
+  if dazpm_args_has plain; then
+    local pkg
+    for pkg in "$DAZPM_PACKAGES_DIR"/*(N); do
+      [[ -e "$pkg" ]] || continue
+      print -r -- "${pkg:t}"
+    done
+    return 0
+  fi
+
+  if ! dazpm_args_has verbose; then
     local found=0
     local pkg
 

@@ -1,15 +1,23 @@
 source "$DAZPM_ROOT/lib/package.zsh"
 source "$DAZPM_ROOT/lib/record.zsh"
+source "$DAZPM_ROOT/lib/args.zsh"
 
 dazpm_cmd_link() {
-  local pkg_path="${1:-}"
-  local name="${2:-}"
+  dazpm_args_parse "" "name|n" "$@"
+
+  local pkg_path name
+  pkg_path="$(dazpm_args_first)"
+  name="$(dazpm_args_get name "")"
 
   [[ -n "$pkg_path" ]] || dazpm_die "usage: dazpm link <path> [name]"
 
   pkg_path="${pkg_path:A}"
 
   [[ -d "$pkg_path" ]] || dazpm_die "directory not found: $pkg_path"
+
+  if [[ -z "$name" && "${#DAZPM_ARGS[@]}" -ge 2 ]]; then
+    name="${DAZPM_ARGS[2]}"
+  fi
 
   [[ -n "$name" ]] || name="${pkg_path:t}"
 
@@ -34,5 +42,4 @@ dazpm_cmd_link() {
   "$DAZPM_ROOT/bin/dazpm" rebuild
 
   dazpm_log "linked local package: $name"
-  dazpm_log "run now: source ~/.local/share/dazpm/init.zsh"
 }

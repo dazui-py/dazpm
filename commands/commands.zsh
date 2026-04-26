@@ -1,13 +1,27 @@
 source "$DAZPM_ROOT/lib/package.zsh"
+source "$DAZPM_ROOT/lib/args.zsh"
 
 dazpm_cmd_commands() {
-  local name="${1:-}"
+  dazpm_args_parse "path|p" "" "$@"
 
-  [[ -n "$name" ]] || dazpm_die "usage: dazpm commands <name>"
+  local input
+  input="$(dazpm_args_first)"
 
-  local pkg_dir="$DAZPM_PACKAGES_DIR/$name"
+  [[ -n "$input" ]] || dazpm_die "usage: dazpm commands <name> | dazpm commands --path <dir>"
 
-  [[ -e "$pkg_dir" ]] || dazpm_die "package not installed: $name"
+  local name pkg_dir
+
+  if dazpm_args_has path; then
+    pkg_dir="${input:A}"
+    [[ -d "$pkg_dir" ]] || dazpm_die "directory not found: $pkg_dir"
+    name="${pkg_dir:t}"
+    dazpm_warn "inspecting local package, not installed"
+  else
+    name="$input"
+    pkg_dir="$DAZPM_PACKAGES_DIR/$name"
+    [[ -e "$pkg_dir" ]] || dazpm_die "package not installed: $name"
+    pkg_dir="${pkg_dir:A}"
+  fi
 
   local found=0
   local file_item

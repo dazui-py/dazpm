@@ -1,3 +1,5 @@
+source "$DAZPM_ROOT/lib/args.zsh"
+
 dazpm_new_safe_function_name() {
   local name="$1"
   local safe="$name"
@@ -9,13 +11,25 @@ dazpm_new_safe_function_name() {
 }
 
 dazpm_cmd_new() {
-  local name="${1:-}"
+  dazpm_args_parse \
+    "no-readme" \
+    "author|a,license|l,description|desc|d,version" \
+    "$@"
 
-  [[ -n "$name" ]] || dazpm_die "usage: dazpm new <name>"
+  local name
+  name="$(dazpm_args_first)"
+
+  [[ -n "$name" ]] || dazpm_die "usage: dazpm new <name> [options]"
 
   if [[ "$name" == *[!A-Za-z0-9._-]* ]]; then
     dazpm_die "unsafe package name: $name"
   fi
+
+  local author license description version
+  author="$(dazpm_args_get author "")"
+  license="$(dazpm_args_get license "")"
+  description="$(dazpm_args_get description "")"
+  version="$(dazpm_args_get version "0.1.0")"
 
   local pkg_dir="$PWD/$name"
   local plugin_file="plugins/$name.zsh"
@@ -35,10 +49,10 @@ dazpm_cmd_new() {
 
   cat > "$pkg_dir/daz.toml" <<EOF_TOML
 name = "$name"
-version = "0.1.0"
-description = ""
-author = ""
-license = ""
+version = "$version"
+description = "$description"
+author = "$author"
+license = "$license"
 
 [shell]
 supports = ["zsh"]
@@ -62,7 +76,8 @@ ${fn_name}_hello() {
 }
 EOF_PLUGIN
 
-  cat > "$pkg_dir/README.md" <<EOF_README
+  if ! dazpm_args_has no-readme; then
+    cat > "$pkg_dir/README.md" <<EOF_README
 # $name
 
 A dazpm package.
@@ -81,6 +96,7 @@ source ~/.local/share/dazpm/init.zsh
 ${fn_name}_hello
 \`\`\`
 EOF_README
+  fi
 
   dazpm_ui_kv "path" "$pkg_dir"
   dazpm_ui_kv "plugin" "$plugin_file"

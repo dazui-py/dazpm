@@ -1,5 +1,6 @@
 source "$DAZPM_ROOT/lib/package.zsh"
 source "$DAZPM_ROOT/lib/manifest.zsh"
+source "$DAZPM_ROOT/lib/args.zsh"
 
 dazpm_validate_kind_rules() {
   local pkg_dir="$1"
@@ -36,28 +37,39 @@ dazpm_validate_kind_rules() {
 }
 
 dazpm_cmd_validate() {
-  local pkg_dir="${1:-.}"
+  dazpm_args_parse "quiet|q" "path|p" "$@"
+
+  local pkg_dir
+  pkg_dir="$(dazpm_args_get path "")"
+
+  if [[ -z "$pkg_dir" ]]; then
+    pkg_dir="$(dazpm_args_first ".")"
+  fi
 
   pkg_dir="${pkg_dir:A}"
 
   [[ -d "$pkg_dir" ]] || dazpm_die "directory not found: $pkg_dir"
 
-  dazpm_ui_header "Validating package"
-  dazpm_ui_kv "path" "$pkg_dir"
-  dazpm_ui_blank
+  if ! dazpm_args_has quiet; then
+    dazpm_ui_header "Validating package"
+    dazpm_ui_kv "path" "$pkg_dir"
+    dazpm_ui_blank
+  fi
 
   dazpm_pkg_validate "$pkg_dir"
 
   if dazpm_manifest_exists "$pkg_dir"; then
-    dazpm_log "manifest: ok"
+    if ! dazpm_args_has quiet; then
+      dazpm_log "manifest: ok"
 
-    local manifest_name manifest_version
+      local manifest_name manifest_version
 
-    manifest_name="$(dazpm_manifest_get_value "$pkg_dir" "" "name" 2>/dev/null || true)"
-    manifest_version="$(dazpm_manifest_get_value "$pkg_dir" "" "version" 2>/dev/null || true)"
+      manifest_name="$(dazpm_manifest_get_value "$pkg_dir" "" "name" 2>/dev/null || true)"
+      manifest_version="$(dazpm_manifest_get_value "$pkg_dir" "" "version" 2>/dev/null || true)"
 
-    [[ -n "$manifest_name" ]] && dazpm_ui_kv "name" "$manifest_name"
-    [[ -n "$manifest_version" ]] && dazpm_ui_kv "version" "$manifest_version"
+      [[ -n "$manifest_name" ]] && dazpm_ui_kv "name" "$manifest_name"
+      [[ -n "$manifest_version" ]] && dazpm_ui_kv "version" "$manifest_version"
+    fi
   else
     dazpm_warn "no daz.toml found, using legacy layout"
   fi
@@ -67,5 +79,7 @@ dazpm_cmd_validate() {
   dazpm_validate_kind_rules "$pkg_dir" "functions"
   dazpm_validate_kind_rules "$pkg_dir" "completions"
 
-  dazpm_log "valid package"
+  if ! dazpm_args_has quiet; then
+    dazpm_log "valid package"
+  fi
 }

@@ -2,22 +2,45 @@ source "$DAZPM_ROOT/lib/source.zsh"
 source "$DAZPM_ROOT/lib/git.zsh"
 source "$DAZPM_ROOT/lib/package.zsh"
 source "$DAZPM_ROOT/lib/record.zsh"
+source "$DAZPM_ROOT/lib/args.zsh"
 
 dazpm_cmd_install() {
-  local src="${1:-}"
+  dazpm_args_parse "force|f" "name|n,ref|r" "$@"
 
-  [[ -n "$src" ]] || dazpm_die "usage: dazpm install <source>"
+  local src
+  src="$(dazpm_args_first)"
+
+  [[ -n "$src" ]] || dazpm_die "usage: dazpm install <source> [options]"
 
   dazpm_source_parse "$src"
 
   local name="$DAZPM_SOURCE_NAME"
   local url="$DAZPM_SOURCE_URL"
   local ref="$DAZPM_SOURCE_REF"
+
+  local opt_name opt_ref
+  opt_name="$(dazpm_args_get name "")"
+  opt_ref="$(dazpm_args_get ref "")"
+
+  [[ -n "$opt_name" ]] && name="$opt_name"
+  [[ -n "$opt_ref" ]] && ref="$opt_ref"
+
+  if [[ "$name" == *[!A-Za-z0-9._-]* ]]; then
+    dazpm_die "unsafe package name: $name"
+  fi
+
   local dest="$DAZPM_PACKAGES_DIR/$name"
 
   mkdir -p "$DAZPM_PACKAGES_DIR" "$DAZPM_RECORDS_DIR"
 
-  [[ ! -e "$dest" ]] || dazpm_die "package already installed: $name"
+  if [[ -e "$dest" ]]; then
+    if dazpm_args_has force; then
+      dazpm_warn "overwriting existing package: $name"
+      "$DAZPM_ROOT/bin/dazpm" remove "$name"
+    else
+      dazpm_die "package already installed: $name"
+    fi
+  fi
 
   dazpm_ui_header "Installing $name"
   dazpm_ui_kv "source" "$url"
@@ -44,5 +67,4 @@ dazpm_cmd_install() {
   "$DAZPM_ROOT/bin/dazpm" rebuild
 
   dazpm_log "installed $name"
-  dazpm_info "run: source ~/.local/share/dazpm/init.zsh"
 }

@@ -1,14 +1,26 @@
 source "$DAZPM_ROOT/lib/package.zsh"
 source "$DAZPM_ROOT/lib/record.zsh"
+source "$DAZPM_ROOT/lib/args.zsh"
 
 dazpm_cmd_remove() {
-  local name="${1:-}"
+  dazpm_args_parse "dry-run|n" "" "$@"
 
-  [[ -n "$name" ]] || dazpm_die "usage: dazpm remove <name>"
+  local name
+  name="$(dazpm_args_first)"
+
+  [[ -n "$name" ]] || dazpm_die "usage: dazpm remove <name> [--dry-run]"
 
   local dest="$DAZPM_PACKAGES_DIR/$name"
 
   [[ -e "$dest" ]] || dazpm_die "package not installed: $name"
+
+  dazpm_ui_header "Removing $name"
+  dazpm_ui_kv "path" "${dest:A}"
+
+  if dazpm_args_has dry-run; then
+    dazpm_warn "dry run, nothing removed"
+    return 0
+  fi
 
   dazpm_pkg_unlink_package "${dest:A}"
 
@@ -17,5 +29,5 @@ dazpm_cmd_remove() {
 
   "$DAZPM_ROOT/bin/dazpm" rebuild
 
-  dazpm_log "removed: $name"
+  dazpm_log "removed $name"
 }

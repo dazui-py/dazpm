@@ -1,10 +1,15 @@
 source "$DAZPM_ROOT/lib/package.zsh"
 source "$DAZPM_ROOT/lib/record.zsh"
+source "$DAZPM_ROOT/lib/args.zsh"
+
+typeset -g DAZPM_UPDATE_DID=0
 
 dazpm_update_one() {
   local name="$1"
   local mode="${2:-all}"
   local pkg_dir="$DAZPM_PACKAGES_DIR/$name"
+
+  DAZPM_UPDATE_DID=0
 
   [[ -e "$pkg_dir" ]] || dazpm_die "package not installed: $name"
 
@@ -14,11 +19,16 @@ dazpm_update_one() {
   case "$type" in
     git)
       [[ "$mode" == "all" || "$mode" == "git" ]] || return 0
+      DAZPM_UPDATE_DID=1
 
       [[ -d "$pkg_dir/.git" ]] || dazpm_die "not a git package: $name"
 
       dazpm_ui_header "Updating $name"
-      git -C "$pkg_dir" pull --ff-only
+
+      if ! git -C "$pkg_dir" pull --ff-only; then
+        dazpm_warn "git pull failed: $name"
+        return 1
+      fi
 
       dazpm_pkg_unlink_package "${pkg_dir:A}"
       dazpm_pkg_link_package "$name" "$pkg_dir"
@@ -26,6 +36,7 @@ dazpm_update_one() {
 
     link)
       [[ "$mode" == "all" || "$mode" == "links" ]] || return 0
+      DAZPM_UPDATE_DID=1
 
       dazpm_ui_header "Refreshing $name"
       dazpm_ui_kv "path" "${pkg_dir:A}"
@@ -35,14 +46,19 @@ dazpm_update_one() {
       ;;
 
     *)
-      dazpm_die "missing or invalid record for package: $name"
+      DAZPM_UPDATE_DID=1
+      dazpm_warn "missing or invalid record for package: $name"
+      return 1
       ;;
   esac
+
+  return 0
 }
 
 dazpm_update_many() {
   local mode="$1"
   local found=0
+  local matched=0
   local ok_count=0
   local fail_count=0
   local pkg name
@@ -50,14 +66,19 @@ dazpm_update_many() {
   for pkg in "$DAZPM_PACKAGES_DIR"/*(N); do
     [[ -e "$pkg" ]] || continue
 
-    name="${pkg:t}"
     found=1
+    name="${pkg:t}"
 
-    if ( dazpm_update_one "$name" "$mode" ); then
-      ok_count=$((ok_count + 1))
+    if dazpm_update_one "$name" "$mode"; then
+      if [[ "$DAZPM_UPDATE_DID" -eq 1 ]]; then
+        matched=$((matched + 1))
+        ok_count=$((ok_count + 1))
+      fi
     else
-      fail_count=$((fail_count + 1))
-      dazpm_warn "failed to update: $name"
+      if [[ "$DAZPM_UPDATE_DID" -eq 1 ]]; then
+        matched=$((matched + 1))
+        fail_count=$((fail_count + 1))
+      fi
     fi
   done
 
@@ -70,6 +91,7 @@ dazpm_update_many() {
 
   dazpm_ui_blank
   dazpm_ui_section "Summary"
+  dazpm_ui_kv "matched" "$matched"
   dazpm_ui_kv "updated" "$ok_count"
   dazpm_ui_kv "failed" "$fail_count"
 
@@ -77,35 +99,41 @@ dazpm_update_many() {
 }
 
 dazpm_cmd_update() {
-  local arg="${1:-}"
+  dazpm_args_parse "git,links|local,all" "" "$@"
+
+  local name
+  name="$(dazpm_args_first)"
+
   local mode="all"
+
+  if dazpm_args_has git && dazpm_args_has links; then
+    dazpm_die "choose only one: --git or --links"
+  fi
+
+  if dazpm_args_has git; then
+    mode="git"
+  elif dazpm_args_has links; then
+    mode="links"
+  else
+    mode="all"
+  fi
 
   command -v git >/dev/null 2>&1 || dazpm_die "git is required"
 
-  case "$arg" in
-    ""|--all)
-      mode="all"
-      dazpm_update_many "$mode"
-      ;;
+  if [[ -n "$name" ]]; then
+    if ! dazpm_update_one "$name" "$mode"; then
+      dazpm_die "failed to update: $name"
+    fi
 
-    --git)
-      mode="git"
-      dazpm_update_many "$mode"
-      ;;
+    if [[ "$DAZPM_UPDATE_DID" -eq 0 ]]; then
+      dazpm_warn "package skipped by selected filter: $name"
+      return 0
+    fi
 
-    --links|--local)
-      mode="links"
-      dazpm_update_many "$mode"
-      ;;
+    "$DAZPM_ROOT/bin/dazpm" rebuild
+    dazpm_log "updated $name"
+    return 0
+  fi
 
-    -*)
-      dazpm_die "unknown option: $arg"
-      ;;
-
-    *)
-      dazpm_update_one "$arg" "all"
-      "$DAZPM_ROOT/bin/dazpm" rebuild
-      dazpm_log "updated $arg"
-      ;;
-  esac
+  dazpm_update_many "$mode"
 }
