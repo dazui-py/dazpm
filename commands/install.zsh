@@ -19,12 +19,10 @@ dazpm_cmd_install() {
 
   [[ ! -e "$dest" ]] || dazpm_die "package already installed: $name"
 
-  dazpm_log "installing $name"
-  dazpm_log "source: $url"
-
-  if [[ -n "$ref" ]]; then
-    dazpm_log "ref: $ref"
-  fi
+  dazpm_ui_header "Installing $name"
+  dazpm_ui_kv "source" "$url"
+  [[ -n "$ref" ]] && dazpm_ui_kv "ref" "$ref"
+  dazpm_ui_blank
 
   if ! dazpm_git_clone "$url" "$ref" "$dest"; then
     rm -rf "$dest"
@@ -45,6 +43,6 @@ dazpm_cmd_install() {
 
   "$DAZPM_ROOT/bin/dazpm" rebuild
 
-  dazpm_log "installed: $name"
-  dazpm_log "run now: source ~/.local/share/dazpm/init.zsh"
+  dazpm_log "installed $name"
+  dazpm_info "run: source ~/.local/share/dazpm/init.zsh"
 }

@@ -44,6 +44,7 @@ dazpm_main() {
 
   if [[ "$cmd" == "-h" || "$cmd" == "--help" ]]; then
     dazpm_usage
+    dazpm_ui_after_command
     return 0
   fi
 
@@ -60,4 +61,11 @@ dazpm_main() {
   fi
 
   "$fn" "$@"
+  local exit_code=$?
+
+  if [[ "$exit_code" -eq 0 ]]; then
+    dazpm_ui_after_command
+  fi
+
+  return "$exit_code"
 }

@@ -7,5 +7,17 @@ dazpm_cmd_files() {
 
   [[ -e "$pkg_dir" ]] || dazpm_die "package not installed: $name"
 
-  find "$pkg_dir" -type f | sed "s#${pkg_dir:A}/##" | sort
+  dazpm_ui_header "Files in $name"
+
+  local f rel width max
+
+  width="$(dazpm_ui_width)"
+  max=$(( width - 6 ))
+  [[ "$max" -lt 20 ]] && max=20
+
+  for f in "$pkg_dir"/**/*(N.); do
+    rel="${f#$pkg_dir/}"
+    rel="$(dazpm_ui_trunc_mid "$rel" "$max")"
+    dazpm_ui_item "$rel"
+  done
 }

@@ -1,12 +1,16 @@
 dazpm_log() {
-  print -r -- "dazpm: $*"
+  dazpm_ui_ok "$*"
+}
+
+dazpm_info() {
+  dazpm_ui_info "$*"
 }
 
 dazpm_warn() {
-  print -r -- "dazpm warning: $*" >&2
+  dazpm_ui_warn "$*"
 }
 
 dazpm_die() {
-  print -r -- "dazpm error: $*" >&2
+  dazpm_ui_error "$*"
   exit 1
 }
