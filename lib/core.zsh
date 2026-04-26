@@ -8,13 +8,22 @@ Usage:
   dazpm doctor
   dazpm rebuild
   dazpm list
-
-Future:
   dazpm install <source>
   dazpm remove <name>
-  dazpm update [name]
-  dazpm link <path>
-  dazpm unlink <name>
+  dazpm uninstall <name>
+  dazpm link <path> [name]
+
+Sources:
+  user/repo
+  user/repo@ref
+  github:user/repo
+  https://github.com/user/repo.git
+
+Package layout:
+  bin/
+  functions/
+  plugins/
+  completions/zsh/
 EOF
 }
 
