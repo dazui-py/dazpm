@@ -1,6 +1,7 @@
 dazpm_cmd_init() {
   mkdir -p \
     "$DAZPM_PACKAGES_DIR" \
+    "$DAZPM_RECORDS_DIR" \
     "$DAZPM_BIN_DIR" \
     "$DAZPM_FUNCTIONS_DIR" \
     "$DAZPM_PLUGINS_DIR" \

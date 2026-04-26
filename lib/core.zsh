@@ -7,13 +7,20 @@ Usage:
   dazpm init
   dazpm doctor
   dazpm rebuild
-  dazpm list
+
+Packages:
   dazpm install <source>
   dazpm remove <name>
   dazpm uninstall <name>
+  dazpm update [name]
   dazpm link <path> [name]
+
+Inspect:
+  dazpm list [-v]
   dazpm path <name>
   dazpm commands <name>
+  dazpm info <name>
+  dazpm files <name>
 
 Sources:
   user/repo

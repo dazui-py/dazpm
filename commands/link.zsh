@@ -1,4 +1,5 @@
 source "$DAZPM_ROOT/lib/package.zsh"
+source "$DAZPM_ROOT/lib/record.zsh"
 
 dazpm_cmd_link() {
   local pkg_path="${1:-}"
@@ -18,7 +19,7 @@ dazpm_cmd_link() {
 
   local dest="$DAZPM_PACKAGES_DIR/$name"
 
-  mkdir -p "$DAZPM_PACKAGES_DIR"
+  mkdir -p "$DAZPM_PACKAGES_DIR" "$DAZPM_RECORDS_DIR"
 
   [[ ! -e "$dest" ]] || dazpm_die "package already exists: $name"
 
@@ -27,6 +28,8 @@ dazpm_cmd_link() {
   ln -s "$pkg_path" "$dest"
 
   dazpm_pkg_link_package "$name" "$dest"
+
+  dazpm_record_write "$name" "link" "$pkg_path" "" "" "$pkg_path"
 
   "$DAZPM_ROOT/bin/dazpm" rebuild
 

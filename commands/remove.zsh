@@ -1,4 +1,5 @@
 source "$DAZPM_ROOT/lib/package.zsh"
+source "$DAZPM_ROOT/lib/record.zsh"
 
 dazpm_cmd_remove() {
   local name="${1:-}"
@@ -12,6 +13,7 @@ dazpm_cmd_remove() {
   dazpm_pkg_unlink_package "${dest:A}"
 
   rm -rf "$dest"
+  dazpm_record_remove "$name"
 
   "$DAZPM_ROOT/bin/dazpm" rebuild
 
