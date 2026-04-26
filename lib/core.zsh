@@ -12,6 +12,8 @@ Usage:
   dazpm remove <name>
   dazpm uninstall <name>
   dazpm link <path> [name]
+  dazpm path <name>
+  dazpm commands <name>
 
 Sources:
   user/repo
