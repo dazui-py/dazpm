@@ -25,6 +25,14 @@ for plugin in "$DAZPM_HOME"/plugins/*.zsh(N); do
   source "$plugin"
 done
 
+# Completion UI
+zmodload zsh/complist 2>/dev/null || true
+
+zstyle ':completion:*' menu select
+zstyle ':completion:*' descriptions format '%F{cyan}%d%f'
+zstyle ':completion:*' group-name ''
+zstyle ':completion:*' verbose yes
+
 autoload -Uz compinit
 compinit -d "$DAZPM_HOME/.zcompdump"
 LOADER

@@ -1,10 +1,17 @@
 # dazpm config
 
-: "${XDG_DATA_HOME:=$HOME/.local/share}"
+: "${DAZPM_PREFIX:=${PREFIX:-$HOME/.local}}"
+: "${DAZPM_SHARE_DIR:=$DAZPM_PREFIX/share}"
+: "${DAZPM_BIN_ROOT:=$DAZPM_PREFIX/bin}"
+
 : "${XDG_CONFIG_HOME:=$HOME/.config}"
 : "${XDG_CACHE_HOME:=$HOME/.cache}"
 
-export DAZPM_HOME="${DAZPM_HOME:-$XDG_DATA_HOME/dazpm}"
+export DAZPM_PREFIX
+export DAZPM_SHARE_DIR
+export DAZPM_BIN_ROOT
+
+export DAZPM_HOME="${DAZPM_HOME:-$DAZPM_SHARE_DIR/dazpm-home}"
 export DAZPM_CONFIG_DIR="${DAZPM_CONFIG_DIR:-$XDG_CONFIG_HOME/dazpm}"
 export DAZPM_CACHE_DIR="${DAZPM_CACHE_DIR:-$XDG_CACHE_HOME/dazpm}"
 

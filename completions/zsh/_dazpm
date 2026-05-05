@@ -1,0 +1,209 @@
+#compdef dazpm
+
+_dazpm_packages() {
+  local home="${DAZPM_HOME:-${XDG_DATA_HOME:-$HOME/.local/share}/dazpm}"
+  local -a packages
+  local pkg name type
+
+  for pkg in "$home"/packages/*(N); do
+    name="${pkg:t}"
+    type="$(cat "$home/records/$name/type" 2>/dev/null || print -r -- installed)"
+    packages+=("$name:$type package")
+  done
+
+  if (( ${#packages[@]} )); then
+    _describe -t packages "installed packages" packages
+  else
+    _message "no packages installed"
+  fi
+}
+
+_dazpm_commands() {
+  local -a commands
+
+  commands=(
+    "help:show help"
+    "init:initialize dazpm for zsh"
+    "doctor:check your environment"
+    "rebuild:rebuild the zsh loader"
+    "repair:repair missing package records"
+    "install:install a remote package"
+    "link:link a local package"
+    "update:update one package or all packages"
+    "remove:remove an installed package"
+    "uninstall:alias for remove"
+    "new:create a new package skeleton"
+    "list:list installed packages"
+    "info:show package metadata"
+    "files:show package files"
+    "commands:show package commands"
+    "path:print package path"
+    "validate:validate a package directory"
+  )
+
+  _describe -t commands "dazpm commands" commands
+}
+
+_dazpm_options() {
+  local -a options
+  options=("$@")
+  _describe -t options "options" options
+}
+
+_dazpm() {
+  local cmd="${words[2]:-}"
+  local cur="${words[CURRENT]}"
+  local prev="${words[CURRENT-1]}"
+
+  if (( CURRENT == 2 )); then
+    _dazpm_commands
+    return
+  fi
+
+  case "$prev" in
+    --path|-p)
+      _files -/
+      return
+      ;;
+
+    --name|-n)
+      _message "package name"
+      return
+      ;;
+
+    --ref|-r)
+      _message "git branch, tag, commit or ref"
+      return
+      ;;
+
+    --author|-a)
+      _message "author name"
+      return
+      ;;
+
+    --license|-l)
+      _message "license name"
+      return
+      ;;
+
+    --description|--desc|-d)
+      _message "package description"
+      return
+      ;;
+
+    --version)
+      _message "package version"
+      return
+      ;;
+  esac
+
+  case "$cmd" in
+    help)
+      _dazpm_commands
+      ;;
+
+    install)
+      if [[ "$cur" == -* ]]; then
+        _dazpm_options \
+          "--force:overwrite existing package" \
+          "-f:overwrite existing package" \
+          "--name:set custom package name" \
+          "-n:set custom package name" \
+          "--ref:set git branch tag or ref" \
+          "-r:set git branch tag or ref"
+      else
+        _message "source: user/repo, github:user/repo, user/repo@ref or git URL"
+      fi
+      ;;
+
+    link)
+      if [[ "$cur" == -* ]]; then
+        _dazpm_options \
+          "--name:set custom package name" \
+          "-n:set custom package name"
+      else
+        _files -/
+      fi
+      ;;
+
+    update)
+      if [[ "$cur" == -* ]]; then
+        _dazpm_options \
+          "--git:update only git packages" \
+          "--links:update only linked packages" \
+          "--local:alias for --links" \
+          "--all:update all packages"
+      else
+        _dazpm_packages
+      fi
+      ;;
+
+    remove|uninstall)
+      if [[ "$cur" == -* ]]; then
+        _dazpm_options \
+          "--dry-run:show what would be removed" \
+          "-n:dry run"
+      else
+        _dazpm_packages
+      fi
+      ;;
+
+    info|files|commands|path)
+      if [[ "$cur" == -* ]]; then
+        _dazpm_options \
+          "--path:inspect local package path" \
+          "-p:inspect local package path"
+      else
+        _dazpm_packages
+      fi
+      ;;
+
+    validate)
+      if [[ "$cur" == -* ]]; then
+        _dazpm_options \
+          "--path:validate local package path" \
+          "-p:validate local package path" \
+          "--quiet:suppress success output" \
+          "-q:suppress success output"
+      else
+        _files -/
+      fi
+      ;;
+
+    list)
+      if [[ "$cur" == -* ]]; then
+        _dazpm_options \
+          "--verbose:show package type and source" \
+          "-v:show package type and source" \
+          "--plain:print only package names"
+      fi
+      ;;
+
+    new)
+      if [[ "$cur" == -* ]]; then
+        _dazpm_options \
+          "--author:set package author" \
+          "-a:set package author" \
+          "--license:set package license" \
+          "-l:set package license" \
+          "--description:set package description" \
+          "--desc:set package description" \
+          "-d:set package description" \
+          "--version:set package version" \
+          "--no-readme:skip README.md creation"
+      else
+        _message "new package name"
+      fi
+      ;;
+
+    init|doctor|rebuild|repair)
+      _message "no extra arguments"
+      ;;
+
+    *)
+      _dazpm_commands
+      ;;
+  esac
+}
+
+_dazpm "$@"
