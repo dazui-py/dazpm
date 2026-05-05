@@ -37,22 +37,24 @@ dazpm_files_show_kind() {
 }
 
 dazpm_cmd_files() {
-  dazpm_args_parse "path|p" "" "$@"
+  dazpm_args_parse "" "path|p" "$@"
 
-  local input
+  local input path_opt
   input="$(dazpm_args_first)"
+  path_opt="$(dazpm_args_get path "")"
 
-  [[ -n "$input" ]] || dazpm_die "usage: dazpm files <name> | dazpm files --path <dir>"
+  [[ -n "$input" || -n "$path_opt" ]] || dazpm_die "usage: dazpm files <name> | dazpm files --path <dir>"
 
   local name pkg_dir
 
-  if dazpm_args_has path; then
-    pkg_dir="${input:A}"
+  if [[ -n "$path_opt" ]]; then
+    pkg_dir="${path_opt:A}"
     [[ -d "$pkg_dir" ]] || dazpm_die "directory not found: $pkg_dir"
     name="${pkg_dir:t}"
     dazpm_warn "inspecting local package, not installed"
   else
     name="$input"
+    dazpm_validate_package_name "$name"
     pkg_dir="$DAZPM_PACKAGES_DIR/$name"
     [[ -e "$pkg_dir" ]] || dazpm_die "package not installed: $name"
     pkg_dir="${pkg_dir:A}"

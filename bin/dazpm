@@ -5,6 +5,7 @@ DAZPM_ROOT="${DAZPM_ROOT:-${0:A:h:h}}"
 source "$DAZPM_ROOT/lib/config.zsh"
 source "$DAZPM_ROOT/lib/ui.zsh"
 source "$DAZPM_ROOT/lib/log.zsh"
+source "$DAZPM_ROOT/lib/safety.zsh"
 
 [[ -f "$DAZPM_ROOT/lib/args.zsh" ]] && source "$DAZPM_ROOT/lib/args.zsh"
 

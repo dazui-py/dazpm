@@ -1,4 +1,5 @@
 source "$DAZPM_ROOT/lib/manifest.zsh"
+source "$DAZPM_ROOT/lib/safety.zsh"
 
 dazpm_pkg_files_by_kind() {
   local pkg_dir="$1"
@@ -94,6 +95,21 @@ dazpm_pkg_unlink_package() {
   done
 }
 
+dazpm_pkg_check_link_conflict() {
+  local pkg_dir="$1"
+  local target_file="$2"
+  local target_real
+
+  [[ -e "$target_file" || -L "$target_file" ]] || return 0
+
+  if [[ -L "$target_file" ]]; then
+    target_real="${target_file:A}"
+    [[ "$target_real" == "$pkg_dir"/* ]] && return 0
+  fi
+
+  dazpm_die "file conflict: ${target_file:t} already exists"
+}
+
 dazpm_pkg_link_kind() {
   local name="$1"
   local pkg_dir="$2"
@@ -122,6 +138,7 @@ dazpm_pkg_link_kind() {
 
     target_file="$target_dir/$target_name"
 
+    dazpm_pkg_check_link_conflict "$pkg_dir" "$target_file"
     ln -sf "$file_item" "$target_file"
     linked_count=$((linked_count + 1))
   done

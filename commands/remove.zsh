@@ -10,7 +10,11 @@ dazpm_cmd_remove() {
 
   [[ -n "$name" ]] || dazpm_die "usage: dazpm remove <name> [--dry-run]"
 
+  dazpm_validate_package_name "$name"
+
   local dest="$DAZPM_PACKAGES_DIR/$name"
+
+  dazpm_lock_acquire
 
   [[ -e "$dest" ]] || dazpm_die "package not installed: $name"
 

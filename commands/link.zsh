@@ -21,11 +21,11 @@ dazpm_cmd_link() {
 
   [[ -n "$name" ]] || name="${pkg_path:t}"
 
-  if [[ "$name" == *[!A-Za-z0-9._-]* ]]; then
-    dazpm_die "unsafe package name: $name"
-  fi
+  dazpm_validate_package_name "$name"
 
   local dest="$DAZPM_PACKAGES_DIR/$name"
+
+  dazpm_lock_acquire
 
   mkdir -p "$DAZPM_PACKAGES_DIR" "$DAZPM_RECORDS_DIR"
 

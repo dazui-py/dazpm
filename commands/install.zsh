@@ -25,18 +25,20 @@ dazpm_cmd_install() {
   [[ -n "$opt_name" ]] && name="$opt_name"
   [[ -n "$opt_ref" ]] && ref="$opt_ref"
 
-  if [[ "$name" == *[!A-Za-z0-9._-]* ]]; then
-    dazpm_die "unsafe package name: $name"
-  fi
+  dazpm_validate_package_name "$name"
 
   local dest="$DAZPM_PACKAGES_DIR/$name"
+
+  dazpm_lock_acquire
 
   mkdir -p "$DAZPM_PACKAGES_DIR" "$DAZPM_RECORDS_DIR"
 
   if [[ -e "$dest" ]]; then
     if dazpm_args_has force; then
       dazpm_warn "overwriting existing package: $name"
-      "$DAZPM_ROOT/bin/dazpm" remove "$name"
+      dazpm_pkg_unlink_package "${dest:A}"
+      rm -rf "$dest"
+      dazpm_record_remove "$name"
     else
       dazpm_die "package already installed: $name"
     fi

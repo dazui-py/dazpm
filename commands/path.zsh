@@ -1,24 +1,28 @@
 source "$DAZPM_ROOT/lib/args.zsh"
 
 dazpm_cmd_path() {
-  dazpm_args_parse "path|p" "" "$@"
+  dazpm_args_parse "" "path|p" "$@"
 
-  local input
+  local input path_opt
   input="$(dazpm_args_first)"
+  path_opt="$(dazpm_args_get path "")"
 
-  [[ -n "$input" ]] || dazpm_die "usage: dazpm path <name> | dazpm path --path <dir>"
+  [[ -n "$input" || -n "$path_opt" ]] || dazpm_die "usage: dazpm path <name> | dazpm path --path <dir>"
 
-  if dazpm_args_has path; then
-    local local_path="${input:A}"
+  if [[ -n "$path_opt" ]]; then
+    local local_path="${path_opt:A}"
     [[ -d "$local_path" ]] || dazpm_die "directory not found: $local_path"
     dazpm_warn "local path, not installed"
     dazpm_ui_raw_or_color "$local_path"
     return 0
   fi
 
-  local pkg_dir="$DAZPM_PACKAGES_DIR/$input"
+  local name="$input"
+  dazpm_validate_package_name "$name"
 
-  [[ -e "$pkg_dir" ]] || dazpm_die "package not installed: $input"
+  local pkg_dir="$DAZPM_PACKAGES_DIR/$name"
+
+  [[ -e "$pkg_dir" ]] || dazpm_die "package not installed: $name"
 
   dazpm_ui_raw_or_color "${pkg_dir:A}"
 }

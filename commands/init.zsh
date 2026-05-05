@@ -1,4 +1,6 @@
 dazpm_cmd_init() {
+  dazpm_lock_acquire
+
   mkdir -p \
     "$DAZPM_PACKAGES_DIR" \
     "$DAZPM_RECORDS_DIR" \

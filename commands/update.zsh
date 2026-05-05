@@ -7,6 +7,8 @@ typeset -g DAZPM_UPDATE_DID=0
 dazpm_update_one() {
   local name="$1"
   local mode="${2:-all}"
+
+  dazpm_validate_package_name "$name"
   local pkg_dir="$DAZPM_PACKAGES_DIR/$name"
 
   DAZPM_UPDATE_DID=0
@@ -118,7 +120,9 @@ dazpm_cmd_update() {
     mode="all"
   fi
 
-  command -v git >/dev/null 2>&1 || dazpm_die "git is required"
+  [[ "$mode" == "links" ]] || command -v git >/dev/null 2>&1 || dazpm_die "git is required"
+
+  dazpm_lock_acquire
 
   if [[ -n "$name" ]]; then
     if ! dazpm_update_one "$name" "$mode"; then
